@@ -13,7 +13,7 @@ class MatchTest {
     void testMatch() {
         Match match = new Match("test","test", Instant.now());
 
-        Assertions.assertEquals(0, match.getHomeTownScore());
-        Assertions.assertEquals(0, match.getAwayTownScore());
+        Assertions.assertEquals(0, match.getHomeScore());
+        Assertions.assertEquals(0, match.getAwayScore());
     }
 }

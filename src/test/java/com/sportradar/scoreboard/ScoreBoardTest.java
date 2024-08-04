@@ -14,10 +14,10 @@ public class ScoreBoardTest {
         ConcurrentHashMap<String, Match> repo = new ConcurrentHashMap<>();
         ScoreBoard scoreBoard = new ScoreBoardImpl(repo);
 
-        String homeTownTeam = "Argentina";
-        String awayTownTeam = "Brazil";
+        String homeTeam = "Argentina";
+        String awayTeam = "Brazil";
 
-        scoreBoard.startNewMatch(homeTownTeam, awayTownTeam);
+        scoreBoard.startNewMatch(homeTeam, awayTeam);
 
         Assertions.assertTrue(repo.containsKey("Argentina-Brazil"));
     }
@@ -27,14 +27,10 @@ public class ScoreBoardTest {
     public void testStartMatch_emptyString() {
         ScoreBoard scoreBoard = new ScoreBoardImpl();
 
-        IllegalArgumentException exception = Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> {
-            scoreBoard.startNewMatch("", "Argentina");
-        });
+        IllegalArgumentException exception = Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> scoreBoard.startNewMatch("", "Argentina"));
         Assertions.assertEquals("Arguments can not be empty or null.", exception.getMessage());
 
-        exception = Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> {
-            scoreBoard.startNewMatch("Argentina", "");
-        });
+        exception = Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> scoreBoard.startNewMatch("Argentina", ""));
         Assertions.assertEquals("Arguments can not be empty or null.", exception.getMessage());
     }
 
@@ -43,14 +39,10 @@ public class ScoreBoardTest {
     public void testStartMatch_nullString() {
         ScoreBoard scoreBoard = new ScoreBoardImpl();
 
-        IllegalArgumentException exception = Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> {
-            scoreBoard.startNewMatch("Argentina", null);
-        });
+        IllegalArgumentException exception = Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> scoreBoard.startNewMatch("Argentina", null));
         Assertions.assertEquals("Arguments can not be empty or null.", exception.getMessage());
 
-        exception = Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> {
-            scoreBoard.startNewMatch(null, "Argentina");
-        });
+        exception = Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> scoreBoard.startNewMatch(null, "Argentina"));
         Assertions.assertEquals("Arguments can not be empty or null.", exception.getMessage());
     }
 
@@ -58,35 +50,74 @@ public class ScoreBoardTest {
     @DisplayName("Should return exception When a team is in a ongoing match")
     public void testStartMatch_ongoingMatch() {
         ScoreBoard scoreBoard = new ScoreBoardImpl();
-        String homeTownTeam = "Argentina";
-        String awayTownTeam = "Brazil";
+        String homeTeam = "Argentina";
+        String awayTeam = "Brazil";
 
-        scoreBoard.startNewMatch(homeTownTeam, awayTownTeam);
+        scoreBoard.startNewMatch(homeTeam, awayTeam);
 
-        IllegalStateException exception = Assertions.assertThrowsExactly(IllegalStateException.class, () -> {
-            scoreBoard.startNewMatch("Germany", awayTownTeam);
-        });
+        IllegalStateException exception = Assertions.assertThrowsExactly(IllegalStateException.class, () -> scoreBoard.startNewMatch("Germany", awayTeam));
         Assertions.assertEquals("Can not start match, a team is in a ongoing match.", exception.getMessage());
 
-        exception = Assertions.assertThrowsExactly(IllegalStateException.class, () -> {
-            scoreBoard.startNewMatch(homeTownTeam, "Germany");
-        });
+        exception = Assertions.assertThrowsExactly(IllegalStateException.class, () -> scoreBoard.startNewMatch(homeTeam, "Germany"));
         Assertions.assertEquals("Can not start match, a team is in a ongoing match.", exception.getMessage());
-
     }
 
     @Test
-    @DisplayName("Should return exception When home town team is equal to away town team")
+    @DisplayName("Should return exception When home team is equal to away team")
     public void testStartMatch_sameTeam() {
         ScoreBoard scoreBoard = new ScoreBoardImpl();
-        String homeTownTeam = "Slovenia";
-        String awayTownTeam = "Slovenia";
+        String homeTeam = "Argentina";
+        String awayTeam = "Argentina";
 
-        IllegalArgumentException exception = Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> {
-            scoreBoard.startNewMatch(homeTownTeam, awayTownTeam);
-        });
-        Assertions.assertEquals("Home town team and away town team should be different.", exception.getMessage());
+        IllegalArgumentException exception = Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> scoreBoard.startNewMatch(homeTeam, awayTeam));
+        Assertions.assertEquals("Home team and away team should be different.", exception.getMessage());
+    }
 
+    @Test
+    @DisplayName("Should update Match score in repository When updateScore is called")
+    public void testUpdateScore() {
+        ConcurrentHashMap<String, Match> repo = new ConcurrentHashMap<>();
+        ScoreBoard scoreBoard = new ScoreBoardImpl(repo);
+
+        String homeTeam = "Argentina";
+        String awayTeam = "Brazil";
+
+        scoreBoard.startNewMatch(homeTeam, awayTeam);
+
+        scoreBoard.updateScore(homeTeam, awayTeam, 1, 2);
+
+        String matchKey = "Argentina-Brazil";
+        Assertions.assertTrue(repo.containsKey(matchKey));
+        Assertions.assertEquals(repo.get(matchKey).getHomeScore(), 1);
+        Assertions.assertEquals(repo.get(matchKey).getAwayScore(), 2);
+    }
+
+    @Test
+    @DisplayName("Should return exception When updating with negative score")
+    public void testUpdateScore_negativeScore() {
+        ScoreBoard scoreBorad = new ScoreBoardImpl();
+        String homeTeam = "Argentina";
+        String awayTeam = "Brazil";
+
+        scoreBorad.startNewMatch(homeTeam, awayTeam);
+
+        IllegalArgumentException exception = Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> scoreBorad.updateScore(homeTeam, awayTeam, -1, 3));
+        Assertions.assertEquals("Scores can not be negative.", exception.getMessage());
+
+        exception = Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> scoreBorad.updateScore(homeTeam, awayTeam, 0, -15));
+        Assertions.assertEquals("Scores can not be negative.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should return exception When the teams are currently not in a match")
+    public void testUpdateScore_noMatch() {
+        ScoreBoard scoreBorad = new ScoreBoardImpl();
+        String homeTeam = "Argentina";
+        String awayTeam = "Brazil";
+
+        IllegalStateException exception = Assertions.assertThrowsExactly(IllegalStateException.class, () -> scoreBorad.updateScore(homeTeam, awayTeam, 1, 0));
+
+        Assertions.assertEquals("Match does not exist.", exception.getMessage());
     }
 
 }
