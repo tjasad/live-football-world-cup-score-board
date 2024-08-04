@@ -36,7 +36,7 @@ public final class ScoreBoardImpl implements ScoreBoard {
     }
 
     @Override
-    public void updateScore(final String homeTeam, final String awayTeam, final Integer homeTeamScore, final Integer awayTeamScore) {
+    public void updateScore(final String homeTeam, final String awayTeam, final Integer homeTeamScore, final Integer awayTeamScore) throws IllegalStateException, IllegalArgumentException {
 
         if (homeTeamScore < 0 || awayTeamScore < 0) {
             throw new IllegalArgumentException("Scores can not be negative.");
@@ -54,7 +54,7 @@ public final class ScoreBoardImpl implements ScoreBoard {
     }
 
     @Override
-    public synchronized void finishMatch(String homeTeam, String awayTeam) {
+    public synchronized void finishMatch(String homeTeam, String awayTeam) throws IllegalStateException {
 
         if (!matches.containsKey("%s-%s".formatted(homeTeam, awayTeam))) {
             throw new IllegalStateException("Match does not exist.");
