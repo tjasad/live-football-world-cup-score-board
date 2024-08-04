@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class ScoreBoardTest {
 
@@ -102,18 +103,18 @@ public class ScoreBoardTest {
     @Test
     @DisplayName("Should return exception When updating with negative score")
     public void testUpdateScore_negativeScore() {
-        ScoreBoard scoreBorad = new ScoreBoardImpl();
+        ScoreBoard scoreBoard = new ScoreBoardImpl();
         String homeTeam = "Argentina";
         String awayTeam = "Brazil";
 
-        scoreBorad.startNewMatch(homeTeam, awayTeam);
+        scoreBoard.startNewMatch(homeTeam, awayTeam);
 
         IllegalArgumentException exception = Assertions.assertThrowsExactly(IllegalArgumentException.class, () ->
-                scoreBorad.updateScore(homeTeam, awayTeam, -1, 3));
+                scoreBoard.updateScore(homeTeam, awayTeam, -1, 3));
         Assertions.assertEquals("Scores can not be negative.", exception.getMessage());
 
         exception = Assertions.assertThrowsExactly(IllegalArgumentException.class, () ->
-                scoreBorad.updateScore(homeTeam, awayTeam, 0, -15));
+                scoreBoard.updateScore(homeTeam, awayTeam, 0, -15));
         Assertions.assertEquals("Scores can not be negative.", exception.getMessage());
     }
 
@@ -158,6 +159,105 @@ public class ScoreBoardTest {
         Assertions.assertEquals("Match does not exist.", exception.getMessage());
     }
 
+    @Test
+    @DisplayName("Should return matches summary When getMatchesSummary is called")
+    public void testGetMatchesSummary() {
+        ScoreBoard scoreBoard = new ScoreBoardImpl();
+        scoreBoard.startNewMatch("Argentina", "Brazil");
 
+        String summary = scoreBoard.getMatchesSummary();
+
+        String expectedSummary = "1. Argentina 0 - Brazil 0";
+        Assertions.assertEquals(expectedSummary, summary);
+    }
+
+    @Test
+    @DisplayName("Should return empty string When scoreboard is empty")
+    public void testGetMatchesSummary_emptyScoreBoard() {
+        ScoreBoard scoreBoard = new ScoreBoardImpl();
+        String summary = scoreBoard.getMatchesSummary();
+
+        Assertions.assertEquals("", summary);
+    }
+
+    @Test
+    @DisplayName("Should return match summary ordered by total score When total scores differ")
+    public void testGetMatchesSummary_orderedByTotalScore() {
+        ScoreBoard scoreBoard = new ScoreBoardImpl();
+
+        scoreBoard.startNewMatch("Argentina", "Brazil");
+        scoreBoard.updateScore("Argentina", "Brazil", 0, 1);
+
+        scoreBoard.startNewMatch("Germany", "Spain");
+        scoreBoard.updateScore("Germany", "Spain", 1, 1);
+
+        scoreBoard.startNewMatch("Mexico", "Canada");
+        scoreBoard.updateScore("Mexico", "Canada", 4, 0);
+
+        String summary = scoreBoard.getMatchesSummary();
+
+        String expectedSummary = """
+                1. Mexico 4 - Canada 0
+                2. Germany 1 - Spain 1
+                3. Argentina 0 - Brazil 1""";
+
+        Assertions.assertEquals(expectedSummary, summary);
+    }
+
+    @Test
+    @DisplayName("Should return match summary ordered by most recently started When total scores are the same")
+    public void testGetMatchesSummary_orderedByMostRecentlyStarted() throws InterruptedException {
+        ScoreBoard scoreBoard = new ScoreBoardImpl();
+
+        scoreBoard.startNewMatch("Germany", "Spain");
+        scoreBoard.updateScore("Germany", "Spain", 2, 2);
+
+        TimeUnit.SECONDS.sleep(1);
+
+        scoreBoard.startNewMatch("Argentina", "Brazil");
+        scoreBoard.updateScore("Argentina", "Brazil", 0, 4);
+
+        TimeUnit.SECONDS.sleep(1);
+
+        scoreBoard.startNewMatch("Mexico", "Canada");
+        scoreBoard.updateScore("Mexico", "Canada", 4, 0);
+
+        String summary = scoreBoard.getMatchesSummary();
+
+        String expectedSummary = """
+                1. Mexico 4 - Canada 0
+                2. Argentina 0 - Brazil 4
+                3. Germany 2 - Spain 2""";
+
+        Assertions.assertEquals(expectedSummary, summary);
+    }
+
+    @Test
+    @DisplayName("Should return match summary ordered first by total score then by most recently started")
+    public void testGetMatchesSummary_correctOrder() throws InterruptedException {
+        ScoreBoard scoreBoard = new ScoreBoardImpl();
+
+        scoreBoard.startNewMatch("Mexico", "Canada");
+        scoreBoard.updateScore("Mexico", "Canada", 4, 0);
+
+        TimeUnit.SECONDS.sleep(1);
+
+        scoreBoard.startNewMatch("Germany", "Spain");
+        scoreBoard.updateScore("Germany", "Spain", 1, 1);
+
+        TimeUnit.SECONDS.sleep(1);
+
+        scoreBoard.startNewMatch("Argentina", "Brazil");
+        scoreBoard.updateScore("Argentina", "Brazil", 1, 1);
+
+        String summary = scoreBoard.getMatchesSummary();
+
+        String expectedSummary = """
+                1. Mexico 4 - Canada 0
+                2. Argentina 1 - Brazil 1
+                3. Germany 1 - Spain 1""";
+
+        Assertions.assertEquals(expectedSummary, summary);
+    }
 
 }

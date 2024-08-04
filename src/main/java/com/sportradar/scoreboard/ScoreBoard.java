@@ -34,5 +34,12 @@ public interface ScoreBoard {
      * @param awayTeam the name of the away team
      * @throws IllegalStateException if there is no ongoing match for the given teams
      */
-    void finishMatch(String homeTeam, String awayTeam);
+    void finishMatch(String homeTeam, String awayTeam) throws IllegalStateException;
+
+    /**
+     * Get a summary of matches in progress ordered by their total score and start time.
+     *
+     * @return a string summary of matches in progress in format: "index. homeTeam homeScore - awayTeam awayScore".
+     */
+    String getMatchesSummary();
 }

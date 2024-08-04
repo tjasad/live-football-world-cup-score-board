@@ -1,6 +1,8 @@
 package com.sportradar.scoreboard;
 
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class ScoreBoardImpl implements ScoreBoard {
@@ -61,4 +63,29 @@ public final class ScoreBoardImpl implements ScoreBoard {
         matches.remove("%s-%s".formatted(homeTeam, awayTeam));
     }
 
+    @Override
+    public String getMatchesSummary() {
+
+        List<Match> orderedMatches = matches.values().stream()
+                .sorted(Comparator
+                        .comparingInt((Match match) -> match.getHomeScore() + match.getAwayScore())
+                        .thenComparing(Match::getStart).reversed())
+                .toList();
+
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < orderedMatches.size(); i++) {
+            Match match = orderedMatches.get(i);
+            stringBuilder.append("%d. %s %d - %s %d".formatted(
+                    i + 1,
+                    match.getHomeTeam(),
+                    match.getHomeScore(),
+                    match.getAwayTeam(),
+                    match.getAwayScore()));
+            if (i != orderedMatches.size() - 1) {
+                stringBuilder.append("\n");
+            }
+        }
+
+        return stringBuilder.toString();
+    }
 }
