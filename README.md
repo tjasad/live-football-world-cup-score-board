@@ -109,3 +109,5 @@ To generate the JaCoCo code coverage report, follow these steps:
 - The library operates purely in-memory and does not persist data beyond the runtime of the application. The data
   structure used for this is `ConcurrentHashMap` to satisfy the requirement of simplest solution that could work.
 - Added Lombok with `lombok.config` to avoid having to test the models getters and setters. 
+- While updating scores, new values can be lower than previous ones (but not negative) to allow corrections of faulty
+  updates.
