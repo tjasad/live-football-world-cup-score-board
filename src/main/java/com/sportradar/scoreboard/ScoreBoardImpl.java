@@ -51,4 +51,14 @@ public final class ScoreBoardImpl implements ScoreBoard {
         }
     }
 
+    @Override
+    public synchronized void finishMatch(String homeTeam, String awayTeam) {
+
+        if (!matches.containsKey("%s-%s".formatted(homeTeam, awayTeam))) {
+            throw new IllegalStateException("Match does not exist.");
+        }
+
+        matches.remove("%s-%s".formatted(homeTeam, awayTeam));
+    }
+
 }

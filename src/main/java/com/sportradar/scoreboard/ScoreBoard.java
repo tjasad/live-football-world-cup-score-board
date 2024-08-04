@@ -26,4 +26,13 @@ public interface ScoreBoard {
      * @throws IllegalStateException    if there is no ongoing match for the given teams
      */
     void updateScore(String homeTeam, String awayTeam, Integer homeTeamScore, Integer awayTeamScore) throws IllegalStateException, IllegalArgumentException;
+
+    /**
+     * Removes match from the scoreboard.
+     *
+     * @param homeTeam the name of the home team
+     * @param awayTeam the name of the away team
+     * @throws IllegalStateException if there is no ongoing match for the given teams
+     */
+    void finishMatch(String homeTeam, String awayTeam);
 }
